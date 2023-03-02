@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { getFilteredContacts } from '../../../redux/contacts/contacts-selectors';
-import { removeContact } from '../../../redux/contacts/contacts-slice';
+import { deleteContact } from 'redux/contacts/contacts-operations';
 import styles from './contact-list.module.css';
 
 const ContactList = () => {
@@ -9,7 +9,7 @@ const ContactList = () => {
 
   const contactList = filteredContacts.map(contact => {
     const handleRemoveContact = id => {
-      dispatch(removeContact(id));
+      dispatch(deleteContact(id));
     };
 
     return (

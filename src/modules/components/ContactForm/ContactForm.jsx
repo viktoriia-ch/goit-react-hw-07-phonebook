@@ -1,34 +1,24 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Notify } from 'notiflix';
-import { addContacts } from '../../../redux/contacts/contacts-slice';
-import { getAllContacts } from '../../../redux/contacts/contacts-selectors';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+
+import {
+  fetchContacts,
+  addContact,
+} from '../../../redux/contacts/contacts-operations';
+
 import styles from './contact-form.module.css';
 
 const ContactForm = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
-
-  const contacts = useSelector(getAllContacts);
   const dispatch = useDispatch();
 
-  const isDublicate = (name, number) => {
-    const normalizedName = name.toLowerCase();
-    const normalizedNumber = number.toLowerCase();
-    return contacts.some(
-      ({ name, number }) =>
-        name.toLowerCase() === normalizedName ||
-        number.toLowerCase() === normalizedNumber
-    );
-  };
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
 
   const handleAddContact = ({ name, number }) => {
-    if (isDublicate(name, number)) {
-      return Notify.warning(`Contact '${name}: ${number}' is already exist`);
-    }
-    dispatch(addContacts({ name, number }));
-    setName('');
-    setNumber('');
+    return dispatch(addContact({ name, number }));
   };
 
   const handleChangeName = ({ target: { value } }) => {
@@ -39,9 +29,17 @@ const ContactForm = () => {
     setNumber(value);
   };
 
+  const resetForm = () => {
+    setName('');
+    setNumber('');
+  };
+
   const handleSubmit = event => {
     event.preventDefault();
-    handleAddContact({ name, number });
+    handleAddContact({ name, number }).then(
+      response =>
+        response.type === 'contacts/addContact/fulfilled' && resetForm()
+    );
   };
 
   return (
@@ -59,7 +57,7 @@ const ContactForm = () => {
             pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
             title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
             required
-            placeholder="Enter name"
+            placeholder="enter name..."
           />
         </label>
       </div>
@@ -76,7 +74,7 @@ const ContactForm = () => {
             pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
             title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
             required
-            placeholder="Enter number"
+            placeholder="enter number..."
           />
         </label>
       </div>
